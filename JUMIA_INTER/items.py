@@ -1,24 +1,26 @@
 
 import scrapy
 from itemloaders.processors import MapCompose as ILMapCompose, TakeFirst as ILTakeFirst
-from scrapy.loader.processors import MapCompose, Identity, TakeFirst
-
 from w3lib.html import remove_tags
 import re
 
-
+##### add country #######
 def get_country(value):
     if 'Jumia' in value:
         country = value.replace('Jumia', '').strip()
         return country
 
+## title setting
 def clean_title(title_value):
     title = title_value.strip()
     return title
+
+### SKU settings
 def clean_sku(sku_value):
     sku = sku_value.replace(': ', '')
     return sku
 
+### Stars settings
 def clean_stars(star_value):
     if star_value:
         star = str(star_value[0]).replace('out of 5', '')
@@ -28,20 +30,22 @@ def clean_stars(star_value):
     else :   
         return None
 
+#### brand Settings
 def add_brand(value_brand):
     if value_brand:
         brand = value_brand
         return brand
     else :
         return 'N/A'
-    
+
+#### category and  subcategory
 def clean_category(value):
     if value :
         category = value.replace('/', '')
         return category
     
     
-# to do french translation
+#### filter french and englis web site 
 def clean_advice(advice_value):
     if "verified ratings" in advice_value or "verified rating" in advice_value or "avis vérifiés" in advice_value or "avis vérifié" in advice_value:
         advice = re.findall(r'\d+', advice_value)
@@ -54,17 +58,16 @@ def clean_advice(advice_value):
     else:
         return 'N/A'
 
-
+### refurbished status product
 def clean_refurbished(refurbished_value):
     if refurbished_value:
         return 'True'
     else :
         return 'False'
     
-
+## clean price from device appelation
 def clean_price(price_value):
-    currencies = ['KSh', '₦', 'UGX', 'Dhs', 'DA', 'TND', 'FCFA']
-    #cfa_currencies = 'FCFA'  
+    currencies = ['KSh', '₦', 'UGX', 'Dhs', 'DA', 'TND', 'FCFA']  
     price = None
     if '-' in price_value:
         price_values = price_value.split('-')
@@ -77,6 +80,7 @@ def clean_price(price_value):
             break
     return price
 
+#### clean  french-senegalese product value
 def clean_sen_price(value):
     if '-' in value :
         price = value.split('-')
@@ -93,6 +97,7 @@ def clean_sen_price(value):
     else :
         return 'N/A'
 
+## clean stock value
 def clean_stock(value):
     if value:
         stock = value.strip()
@@ -102,9 +107,11 @@ def clean_stock(value):
     
     
 
+####### convert to price value to dollars with exchange rate ######
 
+### Senegalese price to dollar
 def convert_sen_dollard(value):
-    exchange_rate = 0.000657
+    exchange_rate = 0.00170909
     if value :
         price = clean_sen_price(value)
         dollar_price = price * exchange_rate
@@ -112,7 +119,7 @@ def convert_sen_dollard(value):
     else:
         return 'N/A'
         
-
+# prices to dollar
 def convert_to_dollars(value):
     if value:
         price = clean_price(value)
@@ -149,9 +156,7 @@ def convert_to_dollars(value):
     return 'N/A'
         
 
-
-
-
+### add device name precision
 def clean_device(device_value):
     if 'KSh' in device_value:
         return 'Kenyan Shilling'
@@ -169,7 +174,8 @@ def clean_device(device_value):
         return 'Cfa Francs'
     else :
         return 'N/A'
-    
+
+### ADD currency sigle precision   
 def clean_currency(currency_value):
     if 'KSh' in currency_value:
         return 'KSh'
@@ -188,12 +194,16 @@ def clean_currency(currency_value):
     else :
         return 'N/A'
 
+
+###### discount status #####
+# add precision to discount status
 def add_discount(discount_value):
     if discount_value:
         return 'True'
     else:
         return 'False'
 
+# add discount rate
 def clean_discountrate(discountrate_value):
     if discountrate_value:
         discountrate = discountrate_value
@@ -202,6 +212,8 @@ def clean_discountrate(discountrate_value):
     else:
         return '0%'
    
+####### Flash Sales status #####
+
 
 def is_flashsales(value):
     if value:
@@ -223,6 +235,8 @@ def remain_items(value):
     else :
         return '0'
 
+
+##### seller informations ######
 def get_seller(value):
     if value :
         seller = value
@@ -252,12 +266,15 @@ def get_sellerscore(value):
     else:
         return 'N/A'
 
+## Breadcumbs list #####
 def get_breadlist(value):
     breadcumbs = list(value)
     if len(breadcumbs) > 0:
         breadcumbs.pop(0)
     return breadcumbs
 
+
+## Get product descriptiion ######
 def clean_description(value):
     description = re.sub(r'[\n\r\t\xa0\\]', ' ', value)
     description = re.sub(r'\s+', ' ', description)
@@ -273,6 +290,7 @@ class JumiaInterItem(scrapy.Item):
         input_processor = ILMapCompose(remove_tags, get_country),
         output_processor = ILTakeFirst()  
     )
+    ### spider mapcompose
     language = scrapy.Field(
         input_processor = ILMapCompose(),
         output_processor = ILTakeFirst()
@@ -281,7 +299,7 @@ class JumiaInterItem(scrapy.Item):
         input_processor = ILMapCompose(clean_title, remove_tags),
         output_processor = ILTakeFirst()   
     )
-    
+    ### spider mapcompose
     url = scrapy.Field(
         input_processor = ILMapCompose(),
         output_processor = ILTakeFirst()
@@ -298,6 +316,7 @@ class JumiaInterItem(scrapy.Item):
         input_processor = ILMapCompose(remove_tags, clean_sku),
         output_processor = ILTakeFirst()
     )
+    ### spider mapcompose
     brand = scrapy.Field(
         input_processor = ILMapCompose(remove_tags),
         output_processor = ILTakeFirst()
@@ -333,6 +352,7 @@ class JumiaInterItem(scrapy.Item):
         input_processor = ILMapCompose(remove_tags, clean_sen_price),
         output_processor = ILTakeFirst()  
     )
+    ### spider mapcompose
     stock = scrapy.Field(
         input_processor = ILMapCompose(remove_tags),
         output_processor = ILTakeFirst(),
@@ -373,11 +393,13 @@ class JumiaInterItem(scrapy.Item):
         input_processor = ILMapCompose(remove_tags),
         output_processor = ILTakeFirst()
      
-    ) 
+    )
+     ### spider mapcompose
     isFlashsales = scrapy.Field(
         input_processor = ILMapCompose(remove_tags),
         output_processor = ILTakeFirst()  
     )
+    ### spider mapcompose
     Flashtime = scrapy.Field(
         input_processor = ILMapCompose(remove_tags, flash_remaintime ),
         output_processor = ILTakeFirst() 
@@ -386,6 +408,7 @@ class JumiaInterItem(scrapy.Item):
         input_processor = ILMapCompose(remove_tags, remain_items),
         output_processor = ILTakeFirst()   
     )
+    ### spider mapcompose
     seller = scrapy.Field(
         input_processor = ILMapCompose(remove_tags),
         output_processor = ILTakeFirst()     
@@ -395,21 +418,22 @@ class JumiaInterItem(scrapy.Item):
         output_processor = ILTakeFirst()
         
     )
+    ### spider mapcompose
     sellerFollowers = scrapy.Field(
         input_processor = ILMapCompose(remove_tags),
         output_processor = ILTakeFirst() 
     )
-    # to set
+    # ### spider mapcompose
     sellerOrderFulfillmentRate = scrapy.Field(
         input_processor = ILMapCompose(remove_tags),
         output_processor = ILTakeFirst()   
     )
-    #to set
+    ### spider mapcompose
     sellerQualityScore = scrapy.Field(
         input_processor = ILMapCompose(remove_tags),
         output_processor = ILTakeFirst()  
     )
-    #to set
+    ### spider mapcompose
     sellerCustomerRating = scrapy.Field(
         input_processor = ILMapCompose(remove_tags),
         output_processor = ILTakeFirst()   
@@ -418,6 +442,7 @@ class JumiaInterItem(scrapy.Item):
         input_processor = ILMapCompose(remove_tags),
         output_processor = ILTakeFirst()   
     )
+    ### spider mapcompose
     breadcumbs = scrapy.Field(
         input_processor = ILMapCompose(remove_tags),
         
