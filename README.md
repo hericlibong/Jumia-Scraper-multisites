@@ -18,6 +18,8 @@ Data is retrieved from sites based in the following countries:
 
 #### What is jumia?
 
+![logo](medias/JumiaLogo_(14).png)
+
 Jumia is a Pan-African technology company that is built around a marketplace, logistics service and payment service. The logistics service enables the delivery of packages through a network of local partners while the payment services facilitate the payments of online transactions within Jumia’s ecosystem. It has partnered with more than 100,000 active sellers and individuals and is a direct competitor to Konga in Nigeria and Amazon in Egypt.
 
 
